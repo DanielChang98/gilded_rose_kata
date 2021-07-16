@@ -1,47 +1,78 @@
+SPECIAL_ITEMS = ["Aged Brie", "Backstage passes to a TAFKAL80ETC concert", "Sulfuras, Hand of Ragnaros", "Conjured Mana Cake"].freeze #freeze will store in memory for better performance.
+
 def update_quality(items)
   items.each do |item|
-    if item.name != 'Aged Brie' && item.name != 'Backstage passes to a TAFKAL80ETC concert'
-      if item.quality > 0
-        if item.name != 'Sulfuras, Hand of Ragnaros'
-          item.quality -= 1
-        end
-      end
+    if is_special_item?(item)
+      special_item(item)
     else
-      if item.quality < 50
-        item.quality += 1
-        if item.name == 'Backstage passes to a TAFKAL80ETC concert'
-          if item.sell_in < 11
-            if item.quality < 50
-              item.quality += 1
-            end
-          end
-          if item.sell_in < 6
-            if item.quality < 50
-              item.quality += 1
-            end
-          end
-        end
-      end
+      item.sell_in > 0 ? decrement_normal_item(item, 1) : decrement_normal_item(item, 2)
     end
-    if item.name != 'Sulfuras, Hand of Ragnaros'
-      item.sell_in -= 1
+
+    item.sell_in -= 1
+  end
+end
+
+def is_special_item?(item)
+  SPECIAL_ITEMS.include? item.name
+end
+
+def decrement_normal_item(item, num)
+  if item.quality > 0
+    case num
+    when 1
+      item.quality -= 1
+    when 2
+      item.quality -= 2
     end
-    if item.sell_in < 0
-      if item.name != "Aged Brie"
-        if item.name != 'Backstage passes to a TAFKAL80ETC concert'
-          if item.quality > 0
-            if item.name != 'Sulfuras, Hand of Ragnaros'
-              item.quality -= 1
-            end
-          end
-        else
-          item.quality = item.quality - item.quality
-        end
-      else
-        if item.quality < 50
-          item.quality += 1
-        end
-      end
+  end
+end
+
+def special_item(item)
+  if item.name == "Aged Brie"
+    change_aged_brie(item)
+  elsif item.name == "Backstage passes to a TAFKAL80ETC concert"
+    change_backstage_pass(item)
+  elsif item.name == "Conjured Mana Cake"
+    change_conjured_item(item)
+  else
+    change_sulfuras(item)
+  end
+end
+
+def change_aged_brie(item)
+  if item.quality < 50
+    if item.sell_in <= 0 && item.quality <= 48
+      item.quality += 2
+    else
+      item.quality += 1
+    end
+  end
+end
+
+def change_backstage_pass(item)
+  if item.quality < 50
+    if item.sell_in <= 0
+      item.quality = item.quality - item.quality
+    elsif item.sell_in < 6
+      item.quality += 3
+    elsif item.sell_in < 11
+      item.quality += 2
+    else
+      item.quality += 1
+    end
+  end
+end
+
+def change_sulfuras(item)
+  item.sell_in += 1
+end
+
+def change_conjured_item(item)
+  if item.quality > 0
+    if item.sell_in <= 0
+      item.quality -= 4
+    else
+      item.quality -= 2
     end
   end
 end
